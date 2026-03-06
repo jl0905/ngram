@@ -215,7 +215,24 @@ def benchmark():
 			del model
 		
 model = NGram(3, t2)
-model.evaluate(real_test, "results.xxxxxx.json")
-model.evaluate(personal_test, "results.yyyyyy.json")
+
 #print(test.ngram[tuple(["private"])])
 #test.evaluate(test_methods, "results.json")
+import sys
+
+if len(sys.argv) > 1:
+	fname = sys.argv[1]
+
+	user_data = readMethods(fname, -1)
+
+	output_fname = input("What do you want the output to be named? (include file extension): ")
+
+	model.evaluate(user_data, output_fname)
+
+xd = input("\nevaluatte preexisting test data? (Y/N): \n")
+
+if 'y' in xd.lower():
+	model.evaluate(real_test, "results.xxxxxx.json")
+	model.evaluate(personal_test, "results.yyyyyy.json")
+else:
+	pass
