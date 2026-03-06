@@ -1,7 +1,7 @@
 {
 	"testSet": "provided.txt",
 	"contextWindow": 3,
-	"perplexity": inf,
+	"perplexity": 16.593678958351802,
 	"data": [
 		{
 			"index": "ID1",

@@ -10,7 +10,7 @@ def readMethods(filename, size):
 	with open(filename, "r") as f:
 		for line in f:
 			if filename == "methods.txt":
-				if line_number == size * 2: #COMMENT OUT 
+				if line_number == size * 2: 
 					break
 				if line_number % 2 == 1:
 					#IF THE LINE IS A METHOD WE NEED TO DO STUFF
@@ -33,7 +33,7 @@ def readMethods(filename, size):
 
 class NGram:
 	def __init__(self, N, tokenized_input):
-		self.tokenized_input = self.preprocessUnknownTokens(tokenized_input)
+		tokenized_input = self.preprocessUnknownTokens(tokenized_input)
 		
 		self.n = N
 		self.ngram = self.constructNGram(tokenized_input, N)
@@ -118,10 +118,14 @@ class NGram:
 					penalty = penalty * 0.8
 
 	def evaluate(self, evaluation_set, write_to=""):
-		perplexity = 1
+		from decimal import Decimal, getcontext
+		# Set precision high enough for our calculations
+		getcontext().prec = 50
+		
+		perplexity = Decimal(1)  # Use Decimal for arbitrary precision
 		probabilities = []
 		n = self.n
-		epsilon = 1e-10  # Small number to prevent zero probabilities
+		epsilon = Decimal('1e-10')  # Small number to prevent zero probabilities 
 		for method in evaluation_set:
 			tokens = ["<START>" for _ in range(self.n-1)]
 			tokens.extend(method)#.split(" "))
@@ -131,12 +135,15 @@ class NGram:
 				v = tokens[i+n-1]
 				pred_probability = self.getProbabilityOfToken(k, v)
 				# Clamp probability to avoid zero
-				pred_probability = max(pred_probability, epsilon)
-				probabilities.append(pred_probability)
-				perplexity *= (1 / pred_probability)
-		perplexity = perplexity ** (1 / len(probabilities))
+				pred_probability = max(Decimal(pred_probability), epsilon)
+				probabilities.append(float(pred_probability))  # Store as float for JSON
+				perplexity *= (Decimal(1) / pred_probability)
+		# Convert back to float for final result
+		perplexity = float(perplexity ** (Decimal(1) / Decimal(len(probabilities))))
+		#print(f"Final perplexity: {perplexity}")
 		if write_to != "":
 			self.writeResults(write_to, evaluation_set, perplexity, probabilities)
+		return perplexity
 
 	def writeResults(self, filename, evaluation_set, perplexity, probabilities):
 		tokenized_methods = evaluation_set
@@ -187,9 +194,28 @@ class NGram:
 			f.write(tab + "]\n")
 			f.write("}\n")
 
-all_methods = readMethods("methods.txt", 35000)
-test_methods = readMethods("test.txt", 100)
+all_methods = readMethods("methods.txt", 60000)
+t1 = all_methods[:15000]
+t2 = all_methods[:25000]
+t3 = all_methods[:35000]
+unseen = all_methods[35000:]
+import random
+random.seed(42)  # For reproducible results
+unseen_sample = random.sample(unseen, 2000)  # Take 2000 random samples from unseen
+validation = unseen_sample[:1000]  # First 1000 for validation
+personal_test = unseen_sample[1000:]  # Next 1000 for testing
 
-test = NGram(3, all_methods)
+real_test = readMethods("test.txt", -1)
+
+def benchmark():
+	for i in [3, 5, 7]:
+		for data in [t1, t2, t3]:
+			model = NGram(i, data)
+			print(f"The perplexity for a {i}-gram model trained from {len(data)} entries of data is: {model.evaluate(validation)}")
+			del model
+		
+model = NGram(3, t2)
+model.evaluate(real_test, "results.xxxxxx.json")
+model.evaluate(personal_test, "results.yyyyyy.json")
 #print(test.ngram[tuple(["private"])])
-test.evaluate(test_methods, "results.json")
+#test.evaluate(test_methods, "results.json")
