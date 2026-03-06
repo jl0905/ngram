@@ -1,0 +1,25 @@
+{
+	"testSet": "provided.txt",
+	"perplexity": 4.39,
+	"data": [
+		{
+			"index": "ID1",
+			"tokenizedCode": "public void run ( ) { }",
+			"contextWindow": 3,
+			"predictions": [
+				{
+					"context": ["public", "void"],
+					"predToken": "run",
+					"predProbability": 0.72,
+					"groundTruth": "run"
+				},
+				{
+					"context": ["void", "run"],
+					"predToken": "(",
+					"predProbability": 0.85,
+					"groundTruth": "("
+				}
+			]
+		}
+	]
+}
